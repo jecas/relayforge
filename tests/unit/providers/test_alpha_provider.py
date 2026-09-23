@@ -77,7 +77,7 @@ async def test_alpha_provider_executes_full_flow() -> None:
 
     assert authorize_request.url.path == "/oauth/authorize"
     assert (
-        authorize_request.headers["X-Correlation-ID"]
+        authorize_request.headers["x-correlation-id"]
         == "corr-123"
     )
 
@@ -94,7 +94,7 @@ async def test_alpha_provider_executes_full_flow() -> None:
 
     assert token_request.url.path == "/oauth/token"
     assert (
-        token_request.headers["X-Correlation-ID"]
+        token_request.headers["x-correlation-id"]
         == "corr-123"
     )
 
@@ -108,7 +108,7 @@ async def test_alpha_provider_executes_full_flow() -> None:
     )
 
     assert (
-        verify_request.headers["X-Correlation-ID"]
+        verify_request.headers["x-correlation-id"]
         == "corr-123"
     )
 
