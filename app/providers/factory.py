@@ -17,6 +17,10 @@ class ProviderFactory:
                 http_client=http_client,
                 client_id=settings.alpha_client_id,
                 client_secret=settings.alpha_client_secret,
+                max_attempts=settings.provider_max_attempts,
+                retry_base_delay_seconds=(
+                    settings.provider_retry_base_delay_seconds
+                ),
             )
 
         raise ValueError(
