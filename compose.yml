@@ -33,6 +33,8 @@ services:
       ALPHA_CLIENT_SECRET: development-secret
       BETA_BASE_URL: http://mock-provider:9000
       BETA_API_KEY: development-beta-key
+      PROVIDER_MAX_ATTEMPTS: 3
+      PROVIDER_RETRY_BASE_DELAY_SECONDS: 0.05
     depends_on:
       postgres:
         condition: service_healthy
