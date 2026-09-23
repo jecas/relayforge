@@ -104,7 +104,7 @@ def test_alpha() -> None:
             "provider": "alpha",
         },
         headers={
-            "X-Correlation-ID": correlation_id,
+            "x-correlation-id": correlation_id,
         },
     )
 
@@ -120,7 +120,7 @@ def test_alpha() -> None:
     }
 
     assert (
-        headers["X-Correlation-ID"]
+        headers["x-correlation-id"]
         == correlation_id
     )
 
@@ -138,7 +138,7 @@ def test_beta() -> None:
             "provider": "beta",
         },
         headers={
-            "X-Correlation-ID": correlation_id,
+            "x-correlation-id": correlation_id,
         },
     )
 
@@ -154,7 +154,7 @@ def test_beta() -> None:
     }
 
     assert (
-        headers["X-Correlation-ID"]
+        headers["x-correlation-id"]
         == correlation_id
     )
 
@@ -172,7 +172,7 @@ def test_provider_unavailable() -> None:
             "provider": "alpha",
         },
         headers={
-            "X-Correlation-ID": correlation_id,
+            "x-correlation-id": correlation_id,
         },
     )
 
@@ -189,7 +189,7 @@ def test_provider_unavailable() -> None:
     }
 
     assert (
-        headers["X-Correlation-ID"]
+        headers["x-correlation-id"]
         == correlation_id
     )
 
