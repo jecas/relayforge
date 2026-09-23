@@ -64,3 +64,31 @@ jobs:
 
       - name: Build mock provider Docker image
         run: docker build -f mock_provider/Dockerfile -t relayforge-mock-provider:test .
+
+  e2e:
+    runs-on: ubuntu-24.04
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start RelayForge stack
+        run: docker compose up -d --build
+
+      - name: Show running containers
+        run: docker compose ps
+
+      - name: Run E2E tests
+        run: python scripts/e2e_test.py
+
+      - name: Verify audit records
+        run: python scripts/verify_audit_records.py
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop RelayForge stack
+        if: always()
+        run: docker compose down -v
