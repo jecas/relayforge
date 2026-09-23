@@ -19,11 +19,20 @@ services:
       dockerfile: mock_provider/Dockerfile
     ports:
       - "9000:9000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:9000/health')",
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 15
 
   api:
     build: .
-    command: >
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     environment:
@@ -39,4 +48,7 @@ services:
       postgres:
         condition: service_healthy
       mock-provider:
-        condition: service_started
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
