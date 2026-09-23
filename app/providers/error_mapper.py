@@ -9,6 +9,25 @@ from app.core.exceptions import (
 )
 
 
+def _parse_retry_after(
+    response: httpx.Response,
+) -> float | None:
+    value = response.headers.get("Retry-After")
+
+    if value is None:
+        return None
+
+    try:
+        retry_after = float(value)
+    except ValueError:
+        return None
+
+    if retry_after < 0:
+        return None
+
+    return retry_after
+
+
 def map_provider_response_error(
     response: httpx.Response,
 ) -> Exception:
@@ -21,7 +40,9 @@ def map_provider_response_error(
         return ProviderNotFoundError()
 
     if status_code == 429:
-        return ProviderRateLimitError()
+        return ProviderRateLimitError(
+            retry_after_seconds=_parse_retry_after(response)
+        )
 
     if 500 <= status_code <= 599:
         return ProviderUnavailableError()
