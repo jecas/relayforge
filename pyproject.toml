@@ -43,3 +43,8 @@ select = [
     "UP",
     "B",
 ]
+
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Header",
+]
