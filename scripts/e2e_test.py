@@ -42,7 +42,7 @@ def request(
             return (
                 response.status,
                 body,
-                dict(response.headers),
+                {key.lower(): value for key, value in response.headers.items()},
             )
 
     except urllib.error.HTTPError as exc:
