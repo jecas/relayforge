@@ -29,6 +29,7 @@ async def create_verification(
     result = await service.verify(
         phone_number=request_body.phone_number,
         correlation_id=correlation_id,
+        provider_name=request_body.provider,
     )
 
     return VerificationResponse(
