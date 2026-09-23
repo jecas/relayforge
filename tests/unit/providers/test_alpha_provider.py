@@ -6,12 +6,11 @@ import pytest
 from app.core.exceptions import (
     ProviderAuthenticationError,
     ProviderProtocolError,
+    ProviderRequestError,
     ProviderTimeoutError,
     ProviderUnavailableError,
-    ProviderRequestError,
 )
 from app.providers.alpha.client import AlphaProvider
-
 
 @pytest.mark.asyncio
 async def test_alpha_provider_executes_full_flow() -> None:
