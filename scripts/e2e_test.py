@@ -39,10 +39,15 @@ def request(
                 response.read().decode("utf-8")
             )
 
+            response_headers = {
+                key.lower(): value
+                for key, value in response.headers.items()
+            }
+
             return (
                 response.status,
                 body,
-                {key.lower(): value for key, value in response.headers.items()},
+                response_headers,
             )
 
     except urllib.error.HTTPError as exc:
@@ -50,10 +55,15 @@ def request(
             exc.read().decode("utf-8")
         )
 
+        response_headers = {
+            key.lower(): value
+            for key, value in exc.headers.items()
+        }
+
         return (
             exc.code,
             body,
-            dict(exc.headers),
+            response_headers,
         )
 
 
