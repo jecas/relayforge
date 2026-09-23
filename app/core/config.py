@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_prefix: str = "/api/v1"
 
+    alpha_base_url: str = "http://mock-provider:9000"
+    alpha_client_id: str = "relayforge"
+    alpha_client_secret: str = "development-secret"
+    alpha_timeout_seconds: float = 5.0
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
