@@ -17,11 +17,13 @@ class BetaProvider:
     def __init__(
         self,
         http_client: httpx.AsyncClient,
+        base_url: str,
         api_key: str,
         max_attempts: int = 3,
         retry_base_delay_seconds: float = 0.25,
     ) -> None:
         self._http_client = http_client
+        self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._max_attempts = max_attempts
         self._retry_base_delay_seconds = retry_base_delay_seconds
@@ -48,7 +50,7 @@ class BetaProvider:
     ) -> VerificationResult:
         try:
             response = await self._http_client.post(
-                "/beta/verify",
+                f"{self._base_url}/beta/verify",
                 json={
                     "phone": phone_number,
                 },
