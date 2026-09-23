@@ -58,6 +58,7 @@ async def test_alpha_provider_executes_full_flow() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
         )
