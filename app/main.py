@@ -4,8 +4,12 @@ from fastapi.responses import JSONResponse
 from app.api.routes import health, verifications
 from app.core.config import get_settings
 from app.core.exceptions import RelayForgeError
+from app.core.logging import configure_logging
+from app.core.middleware import CorrelationIdMiddleware
 
 settings = get_settings()
+
+configure_logging()
 
 app = FastAPI(
     title=settings.app_name,
@@ -16,14 +20,18 @@ app = FastAPI(
     ),
 )
 
+app.add_middleware(CorrelationIdMiddleware)
+
 
 @app.exception_handler(RelayForgeError)
 async def relayforge_error_handler(
     request: Request,
     exc: RelayForgeError,
 ) -> JSONResponse:
-    correlation_id = request.headers.get(
-        "X-Correlation-ID"
+    correlation_id = getattr(
+        request.state,
+        "correlation_id",
+        None,
     )
 
     return JSONResponse(
