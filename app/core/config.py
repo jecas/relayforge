@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     alpha_client_secret: str = "development-secret"
     alpha_timeout_seconds: float = 5.0
 
+    provider_max_attempts: int = 3
+    provider_retry_base_delay_seconds: float = 0.25
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
