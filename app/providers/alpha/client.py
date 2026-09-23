@@ -21,12 +21,14 @@ class AlphaProvider:
     def __init__(
         self,
         http_client: httpx.AsyncClient,
+        base_url: str,
         client_id: str,
         client_secret: str,
         max_attempts: int = 3,
         retry_base_delay_seconds: float = 0.25,
     ) -> None:
         self._http_client = http_client
+        self._base_url = base_url.rstrip("/")
         self._client_id = client_id
         self._client_secret = client_secret
         self._max_attempts = max_attempts
@@ -83,7 +85,7 @@ class AlphaProvider:
         correlation_id: str,
     ) -> str:
         response = await self._http_client.post(
-            "/oauth/authorize",
+            f"{self._base_url}/oauth/authorize",
             json={
                 "login_hint": phone_number,
                 "client_id": self._client_id,
@@ -107,7 +109,7 @@ class AlphaProvider:
         correlation_id: str,
     ) -> str:
         response = await self._http_client.post(
-            "/oauth/token",
+            f"{self._base_url}/oauth/token",
             data={
                 "auth_req_id": auth_req_id,
                 "client_id": self._client_id,
@@ -133,7 +135,7 @@ class AlphaProvider:
         correlation_id: str,
     ) -> AlphaVerificationResponse:
         response = await self._http_client.post(
-            "/verify",
+            f"{self._base_url}/verify",
             json={
                 "phone_number": phone_number,
             },
