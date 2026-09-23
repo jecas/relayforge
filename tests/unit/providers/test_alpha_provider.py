@@ -3,6 +3,13 @@ import json
 import httpx
 import pytest
 
+from app.core.exceptions import (
+    ProviderAuthenticationError,
+    ProviderProtocolError,
+    ProviderTimeoutError,
+    ProviderUnavailableError,
+    ProviderRequestError,
+)
 from app.providers.alpha.client import AlphaProvider
 
 
@@ -104,3 +111,279 @@ async def test_alpha_provider_executes_full_flow() -> None:
         verify_request.headers["X-Correlation-ID"]
         == "corr-123"
     )
+
+@pytest.mark.asyncio
+async def test_does_not_retry_authentication_error() -> None:
+    request_count = 0
+
+    def handler(
+        request: httpx.Request,
+    ) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+
+        return httpx.Response(
+            401,
+            json={
+                "error": "invalid_client",
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="https://alpha.test",
+    ) as client:
+        provider = AlphaProvider(
+            http_client=client,
+            client_id="client-id",
+            client_secret="client-secret",
+            max_attempts=3,
+            retry_base_delay_seconds=0,
+        )
+
+        with pytest.raises(
+            ProviderAuthenticationError
+        ):
+            await provider.verify(
+                phone_number="+381641234567",
+                correlation_id="corr-123",
+            )
+
+    assert request_count == 1
+
+
+@pytest.mark.asyncio
+async def test_retries_provider_unavailable_error() -> None:
+    request_count = 0
+
+    def handler(
+        request: httpx.Request,
+    ) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+
+        return httpx.Response(
+            503,
+            json={
+                "error": "temporarily_unavailable",
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="https://alpha.test",
+    ) as client:
+        provider = AlphaProvider(
+            http_client=client,
+            client_id="client-id",
+            client_secret="client-secret",
+            max_attempts=3,
+            retry_base_delay_seconds=0,
+        )
+
+        with pytest.raises(
+            ProviderUnavailableError
+        ):
+            await provider.verify(
+                phone_number="+381641234567",
+                correlation_id="corr-123",
+            )
+
+    assert request_count == 3
+
+
+@pytest.mark.asyncio
+async def test_succeeds_after_retry() -> None:
+    authorize_attempts = 0
+
+    def handler(
+        request: httpx.Request,
+    ) -> httpx.Response:
+        nonlocal authorize_attempts
+
+        if request.url.path == "/oauth/authorize":
+            authorize_attempts += 1
+
+            if authorize_attempts == 1:
+                return httpx.Response(
+                    503,
+                    json={
+                        "error": "temporarily_unavailable",
+                    },
+                )
+
+            return httpx.Response(
+                200,
+                json={
+                    "auth_req_id": "auth-123",
+                },
+            )
+
+        if request.url.path == "/oauth/token":
+            return httpx.Response(
+                200,
+                json={
+                    "access_token": "token-456",
+                    "token_type": "Bearer",
+                },
+            )
+
+        if request.url.path == "/verify":
+            return httpx.Response(
+                200,
+                json={
+                    "match": True,
+                    "risk_score": 20,
+                },
+            )
+
+        return httpx.Response(404)
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="https://alpha.test",
+    ) as client:
+        provider = AlphaProvider(
+            http_client=client,
+            client_id="client-id",
+            client_secret="client-secret",
+            max_attempts=3,
+            retry_base_delay_seconds=0,
+        )
+
+        result = await provider.verify(
+            phone_number="+381641234567",
+            correlation_id="corr-123",
+        )
+
+    assert authorize_attempts == 2
+    assert result.verified is True
+
+
+@pytest.mark.asyncio
+async def test_retries_timeout() -> None:
+    request_count = 0
+
+    def handler(
+        request: httpx.Request,
+    ) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+
+        raise httpx.ReadTimeout(
+            "Provider timed out",
+            request=request,
+        )
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="https://alpha.test",
+    ) as client:
+        provider = AlphaProvider(
+            http_client=client,
+            client_id="client-id",
+            client_secret="client-secret",
+            max_attempts=3,
+            retry_base_delay_seconds=0,
+        )
+
+        with pytest.raises(
+            ProviderTimeoutError
+        ):
+            await provider.verify(
+                phone_number="+381641234567",
+                correlation_id="corr-123",
+            )
+
+    assert request_count == 3
+
+
+@pytest.mark.asyncio
+async def test_invalid_provider_payload_is_protocol_error() -> None:
+    request_count = 0
+
+    def handler(
+        request: httpx.Request,
+    ) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+
+        return httpx.Response(
+            200,
+            json={
+                "unexpected": "response",
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="https://alpha.test",
+    ) as client:
+        provider = AlphaProvider(
+            http_client=client,
+            client_id="client-id",
+            client_secret="client-secret",
+            max_attempts=3,
+            retry_base_delay_seconds=0,
+        )
+
+        with pytest.raises(
+            ProviderProtocolError
+        ):
+            await provider.verify(
+                phone_number="+381641234567",
+                correlation_id="corr-123",
+            )
+
+    assert request_count == 1
+
+@pytest.mark.asyncio
+async def test_does_not_retry_bad_request() -> None:
+    request_count = 0
+
+    def handler(
+        request: httpx.Request,
+    ) -> httpx.Response:
+        nonlocal request_count
+        request_count += 1
+
+        return httpx.Response(
+            400,
+            json={
+                "error": "invalid_request",
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="https://alpha.test",
+    ) as client:
+        provider = AlphaProvider(
+            http_client=client,
+            client_id="client-id",
+            client_secret="client-secret",
+            max_attempts=3,
+            retry_base_delay_seconds=0,
+        )
+
+        with pytest.raises(
+            ProviderRequestError
+        ):
+            await provider.verify(
+                phone_number="+381641234567",
+                correlation_id="corr-123",
+            )
+
+    assert request_count == 1
