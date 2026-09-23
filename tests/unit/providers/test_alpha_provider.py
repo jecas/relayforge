@@ -138,6 +138,7 @@ async def test_does_not_retry_authentication_error() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
             max_attempts=3,
@@ -180,6 +181,7 @@ async def test_retries_provider_unavailable_error() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
             max_attempts=3,
@@ -252,6 +254,7 @@ async def test_succeeds_after_retry() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
             max_attempts=3,
@@ -290,6 +293,7 @@ async def test_retries_timeout() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
             max_attempts=3,
@@ -332,6 +336,7 @@ async def test_invalid_provider_payload_is_protocol_error() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
             max_attempts=3,
@@ -373,6 +378,7 @@ async def test_does_not_retry_bad_request() -> None:
     ) as client:
         provider = AlphaProvider(
             http_client=client,
+            base_url="https://alpha.example.com",
             client_id="client-id",
             client_secret="client-secret",
             max_attempts=3,
