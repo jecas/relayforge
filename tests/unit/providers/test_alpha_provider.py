@@ -12,6 +12,7 @@ from app.core.exceptions import (
 )
 from app.providers.alpha.client import AlphaProvider
 
+
 @pytest.mark.asyncio
 async def test_alpha_provider_executes_full_flow() -> None:
     requests: list[httpx.Request] = []
