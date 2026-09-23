@@ -71,6 +71,7 @@ def wait_for_api() -> None:
 
         except (
             urllib.error.URLError,
+            ConnectionResetError,
             TimeoutError,
         ):
             pass
