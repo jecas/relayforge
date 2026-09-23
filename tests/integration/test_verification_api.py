@@ -50,3 +50,48 @@ def test_create_verification() -> None:
 
     finally:
         app.dependency_overrides.clear()
+
+def test_generates_correlation_id_when_missing() -> None:
+    service = AsyncMock()
+
+    service.verify.return_value = VerificationResult(
+        verified=False,
+        risk_level="medium",
+        provider="alpha",
+    )
+
+    app.dependency_overrides[
+        get_verification_service
+    ] = lambda: service
+
+    try:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/verifications",
+                json={
+                    "phone_number": "+381641234567",
+                },
+            )
+
+        assert response.status_code == 200
+
+        body = response.json()
+
+        assert body["correlation_id"]
+        assert body["result"]["verified"] is False
+        assert body["result"]["risk_level"] == "medium"
+
+        call = service.verify.await_args
+
+        generated_correlation_id = call.kwargs[
+            "correlation_id"
+        ]
+
+        assert generated_correlation_id
+        assert (
+            generated_correlation_id
+            == body["correlation_id"]
+        )
+
+    finally:
+        app.dependency_overrides.clear()
