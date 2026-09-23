@@ -16,6 +16,7 @@ class ProviderFactory:
         if provider_name == "alpha":
             return AlphaProvider(
                 http_client=http_client,
+                base_url=settings.alpha_base_url,
                 client_id=settings.alpha_client_id,
                 client_secret=settings.alpha_client_secret,
                 max_attempts=settings.provider_max_attempts,
@@ -27,6 +28,7 @@ class ProviderFactory:
         if provider_name == "beta":
             return BetaProvider(
                 http_client=http_client,
+                base_url=settings.beta_base_url,
                 api_key=settings.beta_api_key,
                 max_attempts=settings.provider_max_attempts,
                 retry_base_delay_seconds=(
