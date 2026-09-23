@@ -1,6 +1,4 @@
-from uuid import uuid4
-
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Request
 
 from app.api.dependencies import get_verification_service
 from app.schemas.verification import (
@@ -20,19 +18,16 @@ router = APIRouter(
     response_model=VerificationResponse,
 )
 async def create_verification(
-    request: VerificationRequest,
+    request_body: VerificationRequest,
+    request: Request,
     service: VerificationService = Depends(
         get_verification_service
     ),
-    x_correlation_id: str | None = Header(
-        default=None,
-        alias="X-Correlation-ID",
-    ),
 ) -> VerificationResponse:
-    correlation_id = x_correlation_id or str(uuid4())
+    correlation_id = request.state.correlation_id
 
     result = await service.verify(
-        phone_number=request.phone_number,
+        phone_number=request_body.phone_number,
         correlation_id=correlation_id,
     )
 
