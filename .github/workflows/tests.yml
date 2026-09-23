@@ -8,6 +8,30 @@ jobs:
   test:
     runs-on: ubuntu-24.04
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: relayforge
+          POSTGRES_USER: relayforge
+          POSTGRES_PASSWORD: relayforge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U relayforge -d relayforge"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://relayforge:relayforge@localhost:5432/relayforge
+      ALPHA_BASE_URL: http://localhost:9000
+      ALPHA_CLIENT_ID: relayforge
+      ALPHA_CLIENT_SECRET: development-secret
+      BETA_BASE_URL: http://localhost:9000
+      BETA_API_KEY: development-beta-key
+      PROVIDER_RETRY_BASE_DELAY_SECONDS: 0
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,8 +49,18 @@ jobs:
       - name: Lint
         run: ruff check .
 
+      - name: Validate migrations
+        run: |
+          alembic upgrade head
+          alembic downgrade base
+          alembic upgrade head
+          alembic current
+
       - name: Run tests
         run: pytest -v
 
-      - name: Build Docker image
+      - name: Build API Docker image
         run: docker build -t relayforge:test .
+
+      - name: Build mock provider Docker image
+        run: docker build -f mock_provider/Dockerfile -t relayforge-mock-provider:test .
