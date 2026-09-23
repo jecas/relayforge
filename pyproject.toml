@@ -1,6 +1,6 @@
 [project]
 name = "relayforge"
-version = "0.2.0"
+version = "1.0.0"
 description = "Resilient async API integration service built with Python, FastAPI and HTTPX."
 readme = "README.md"
 requires-python = ">=3.12"
