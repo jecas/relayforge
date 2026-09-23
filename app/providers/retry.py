@@ -1,14 +1,11 @@
 import asyncio
 from collections.abc import Awaitable, Callable
-from typing import TypeVar
 
 from app.core.exceptions import (
     ProviderRateLimitError,
     ProviderTimeoutError,
     ProviderUnavailableError,
 )
-
-T = TypeVar("T")
 
 RETRYABLE_EXCEPTIONS = (
     ProviderTimeoutError,
@@ -17,7 +14,7 @@ RETRYABLE_EXCEPTIONS = (
 )
 
 
-async def with_retry(
+async def with_retry[T](
     operation: Callable[[], Awaitable[T]],
     *,
     max_attempts: int,
