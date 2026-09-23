@@ -51,6 +51,6 @@ async def test_beta_provider_verifies_phone() -> None:
     )
 
     assert (
-        captured_request.headers["X-Correlation-ID"]
+        captured_request.headers["x-correlation-id"]
         == "corr-beta-123"
     )
