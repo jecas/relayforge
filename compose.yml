@@ -1,36 +1,3 @@
-services:
-  postgres:
-    image: postgres:17
-    environment:
-      POSTGRES_DB: relayforge
-      POSTGRES_USER: relayforge
-      POSTGRES_PASSWORD: relayforge
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -U relayforge -d relayforge
-      interval: 2s
-      timeout: 2s
-      retries: 15
-
-  mock-provider:
-    build:
-      context: .
-      dockerfile: mock_provider/Dockerfile
-    ports:
-      - "9000:9000"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:9000/health')",
-        ]
-      interval: 2s
-      timeout: 2s
-      retries: 15
-
   api:
     build: .
     ports:
@@ -52,3 +19,15 @@ services:
     command: >
       sh -c "alembic upgrade head &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+      start_period: 5s
