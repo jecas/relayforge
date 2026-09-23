@@ -30,6 +30,7 @@ async def test_beta_provider_verifies_phone() -> None:
     ) as client:
         provider = BetaProvider(
             http_client=client,
+            base_url="https://beta.example.com",
             api_key="beta-secret",
             retry_base_delay_seconds=0,
         )
