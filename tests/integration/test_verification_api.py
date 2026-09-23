@@ -47,6 +47,7 @@ def test_create_verification() -> None:
         service.verify.assert_awaited_once_with(
             phone_number="+381641234567",
             correlation_id="corr-api-123",
+            provider_name="alpha",
         )
 
     finally:
