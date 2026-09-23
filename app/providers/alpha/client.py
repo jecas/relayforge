@@ -44,6 +44,7 @@ class AlphaProvider:
             ),
             max_attempts=self._max_attempts,
             base_delay_seconds=self._retry_base_delay_seconds,
+            provider_name=self.name,
         )
 
     async def _execute_flow(
