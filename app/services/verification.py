@@ -25,7 +25,7 @@ class VerificationService:
     ) -> VerificationResult:
         provider = ProviderFactory.create(
             provider_name=provider_name,
-            http_client=self._provider_client(provider_name),
+            http_client=self._http_client,
             settings=self._settings,
         )
 
@@ -42,18 +42,3 @@ class VerificationService:
         )
 
         return result
-
-    def _provider_client(
-        self,
-        provider_name: str,
-    ) -> httpx.AsyncClient:
-        if provider_name == "alpha":
-            self._http_client.base_url = httpx.URL(
-                self._settings.alpha_base_url
-            )
-        elif provider_name == "beta":
-            self._http_client.base_url = httpx.URL(
-                self._settings.beta_base_url
-            )
-
-        return self._http_client
