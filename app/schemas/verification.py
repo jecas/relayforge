@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -7,6 +9,8 @@ class VerificationRequest(BaseModel):
         max_length=20,
         examples=["+381641234567"],
     )
+
+    provider: Literal["alpha", "beta"] = "alpha"
 
 
 class VerificationResult(BaseModel):
