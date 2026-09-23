@@ -33,13 +33,11 @@ def verify_record(
     expected_provider: str,
 ) -> None:
     result = run_query(
-        """
+        f"""
         SELECT provider || ':' || status || ':' || risk_level
         FROM verification_audits
         WHERE correlation_id = '{correlation_id}';
-        """.format(
-            correlation_id=correlation_id
-        )
+        """
     )
 
     expected = (
